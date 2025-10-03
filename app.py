@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-from groq import Groq  # For AI summary
+from groq import Groq
 
 # -------------------- Page Config --------------------
 st.set_page_config(page_title="FeedbackIQ", layout="wide")
@@ -13,7 +13,12 @@ st.markdown("### AI-Powered Feedback Analysis Dashboard")
 # -------------------- Load Data --------------------
 @st.cache_data
 def load_data():
-    return pd.read_csv('prioritized_feedback.csv')
+    df = pd.read_csv('prioritized_feedback.csv')
+    # Fill missing values with 'Unknown'
+    df['category'] = df['category'].fillna('Unknown')
+    df['priority_level'] = df['priority_level'].fillna('LOW')
+    df['ai_summary'] = df['ai_summary'].fillna('AI summary pending')
+    return df
 
 df = load_data()
 
@@ -30,65 +35,49 @@ tab1, tab2, tab3 = st.tabs(["📋 Priority List", "📊 Analytics", "💡 Insigh
 with tab1:
     st.header("Prioritized Feedback List")
 
-    # Filter
+    # Filter by priority
     filter_priority = st.multiselect(
         "Filter by Priority",
         ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'],
-        default=['CRITICAL', 'HIGH']
+        default=['CRITICAL', 'HIGH', 'MEDIUM']
     )
     filtered_df = df[df['priority_level'].isin(filter_priority)]
 
     # Color-coded priorities
     def highlight_priority(priority):
         if priority == "CRITICAL":
-            return "background-color: #ff9999"  # Red
+            return "background-color: #ff9999"
         elif priority == "HIGH":
-            return "background-color: #ffcc99"  # Orange
+            return "background-color: #ffcc99"
         elif priority == "MEDIUM":
-            return "background-color: #fff2cc"  # Yellow
+            return "background-color: #fff2cc"
         else:
-            return "background-color: #ccffcc"  # Green
+            return "background-color: #ccffcc"
 
-    st.dataframe(filtered_df.style.applymap(highlight_priority, subset=["priority_level"]))
+    st.dataframe(filtered_df[['feedback_id','original_text','category','priority_level','priority_score']].style.applymap(
+        highlight_priority, subset=["priority_level"]
+    ))
 
-    # Download CSV
+    # Download filtered CSV
     csv = filtered_df.to_csv(index=False).encode("utf-8")
-    st.download_button(
-        "📥 Download Prioritized Feedback",
-        csv,
-        "feedback_results.csv",
-        "text/csv"
-    )
-
-    # Expandable original feedback
-    for idx, row in filtered_df.iterrows():
-        with st.expander(f"**{row['feedback_id']}** - {row['priority_level']} (Score: {row['priority_score']})"):
-            st.write(f"**Original Feedback:** {row['original_text']}")
-            st.write(f"**Category:** {row['category']}")
-            st.write(f"**Sentiment:** {row['sentiment']}")
-            st.write(f"**Urgency:** {row['urgency']}")
-            st.write(f"**AI Summary:** {row['ai_summary']}")
+    st.download_button("📥 Download Prioritized Feedback", csv, "feedback_results.csv", "text/csv")
 
 # -------------------- TAB 2: Analytics --------------------
 with tab2:
     st.header("Analytics Dashboard")
     col1, col2 = st.columns(2)
 
-    # Bar chart: Priority Distribution
     with col1:
         priority_counts = filtered_df['priority_level'].value_counts()
         fig1, ax1 = plt.subplots()
-        ax1.bar(priority_counts.index, priority_counts.values,
-                color=['#ff9999','#ffcc99','#fff2cc','#ccffcc'])
+        ax1.bar(priority_counts.index, priority_counts.values, color=['#ff9999','#ffcc99','#fff2cc','#ccffcc'])
         ax1.set_title("Priority Distribution")
         st.pyplot(fig1)
 
-    # Pie chart: Category Breakdown
     with col2:
         category_counts = filtered_df['category'].value_counts()
         fig2, ax2 = plt.subplots()
-        ax2.pie(category_counts.values, labels=category_counts.index,
-                autopct='%1.1f%%', startangle=90)
+        ax2.pie(category_counts.values, labels=category_counts.index, autopct='%1.1f%%', startangle=90)
         ax2.set_title("Category Breakdown")
         st.pyplot(fig2)
 
@@ -101,17 +90,17 @@ with tab3:
     ### Summary
     - **Total Feedback Analyzed:** {len(filtered_df)}
     - **Critical Issues:** {len(critical_issues)}
-    - **Most Common Category:** {filtered_df['category'].value_counts().index[0]}
+    - **Most Common Category:** {filtered_df['category'].mode()[0]}
     
     ### Top 3 Priorities:
     """)
     for idx, row in filtered_df.head(3).iterrows():
-        st.markdown(f"**{idx+1}. {row['feedback_id']}** - {row['original_text'][:100]}...")
+        st.markdown(f"**{idx+1}. {row['feedback_id']}** - {row['original_text'][:120]}...")
 
-    # AI Summary (Groq)
+    # AI Summary
     st.markdown("### 🤖 AI Insights")
     try:
-        client = Groq(api_key="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")
+        client = Groq(api_key="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")
         top_feedback_text = "\n".join(filtered_df.head(10)['original_text'].tolist())
         response = client.chat.completions.create(
             model="mixtral-8x7b-32768",
@@ -124,5 +113,3 @@ with tab3:
 # -------------------- Footer --------------------
 st.markdown("---")
 st.markdown("*Powered by FeedbackIQ - AI Feedback Intelligence*")
-
-
