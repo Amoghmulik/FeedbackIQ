@@ -1,7 +1,3 @@
-!pip install streamlit pyngrok
-
-# Create your Streamlit app file
-
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -30,17 +26,12 @@ tab1, tab2, tab3 = st.tabs(["📋 Priority List", "📊 Analytics", "💡 Insigh
 
 with tab1:
     st.header("Prioritized Feedback List")
-    
-    # Filter
     filter_priority = st.multiselect(
         "Filter by Priority",
         ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'],
         default=['CRITICAL', 'HIGH']
     )
-    
     filtered_df = df[df['priority_level'].isin(filter_priority)]
-    
-    # Display each feedback
     for idx, row in filtered_df.iterrows():
         with st.expander(f"**{row['feedback_id']}** - {row['priority_level']} (Score: {row['priority_score']})"):
             st.write(f"**Original Feedback:** {row['original_text']}")
@@ -51,19 +42,16 @@ with tab1:
 
 with tab2:
     st.header("Analytics Dashboard")
-    
     col1, col2 = st.columns(2)
-    
+
     with col1:
-        # Priority chart
         priority_counts = df['priority_level'].value_counts()
         fig1, ax1 = plt.subplots()
         ax1.bar(priority_counts.index, priority_counts.values)
         ax1.set_title("Priority Distribution")
         st.pyplot(fig1)
-    
+
     with col2:
-        # Category chart
         category_counts = df['category'].value_counts()
         fig2, ax2 = plt.subplots()
         ax2.pie(category_counts.values, labels=category_counts.index, autopct='%1.1f%%')
@@ -72,9 +60,7 @@ with tab2:
 
 with tab3:
     st.header("💡 Key Insights")
-    
     critical_issues = df[df['priority_level'] == 'CRITICAL']
-    
     st.markdown(f"""
     ### Summary
     - **Total Feedback Analyzed:** {len(df)}
@@ -83,7 +69,6 @@ with tab3:
     
     ### Top 3 Priorities:
     """)
-    
     for idx, row in df.head(3).iterrows():
         st.markdown(f"**{idx+1}. {row['feedback_id']}** - {row['original_text'][:100]}...")
 
