@@ -111,7 +111,7 @@ with tab3:
     # AI Summary (Groq)
     st.markdown("### 🤖 AI Insights")
     try:
-        client = Groq(api_key="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")
+        client = Groq(api_key="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")
         top_feedback_text = "\n".join(filtered_df.head(10)['original_text'].tolist())
         response = client.chat.completions.create(
             model="mixtral-8x7b-32768",
