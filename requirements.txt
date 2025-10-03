@@ -1,0 +1,6 @@
+groq
+pandas
+matplotlib
+seaborn
+streamlit
+requests
