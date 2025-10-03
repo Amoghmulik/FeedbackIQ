@@ -108,7 +108,7 @@ with tab3:
     # ✅ AI Summary for Top Feedback (Groq)
     st.markdown("### 🤖 AI Insights")
     try:
-        client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+        client = Groq(api_key=os.getenv("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"))
         response = client.chat.completions.create(
             model="mixtral-8x7b-32768",
             messages=[{"role": "user", "content": f"Summarize insights from this feedback:\n{filtered_df.head(10)}"}]
