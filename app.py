@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -16,7 +15,6 @@ st.markdown("### AI-Powered Feedback Analysis Dashboard with n8n Integration")
 @st.cache_data
 def load_data():
     df = pd.read_csv('prioritized_feedback.csv')
-    # Fill missing values with 'Unknown'
     df['category'] = df['category'].fillna('Unknown')
     df['priority_level'] = df['priority_level'].fillna('LOW')
     df['ai_summary'] = df['ai_summary'].fillna('AI summary pending')
@@ -30,31 +28,29 @@ st.sidebar.metric("Total Feedback", len(df))
 st.sidebar.metric("Critical Issues", len(df[df['priority_level'] == 'CRITICAL']))
 st.sidebar.metric("High Priority", len(df[df['priority_level'] == 'HIGH']))
 
-# -------------------- n8n Webhook --------------------
-# Your live n8n webhook URL
-# -------------------- N8N Integration --------------------
-import requests
-
-# Use the PRODUCTION webhook URL (not the -test one)
+# -------------------- n8n Webhook Integration --------------------
 N8N_WEBHOOK_URL = "https://amogh-2005.app.n8n.cloud/webhook/82c86925-314f-4280-8009-10837af310b2"
 
-def send_to_n8n(feedback_id, text, category, priority, score):
+def send_to_n8n(row):
+    """
+    Sends a single feedback row to n8n webhook.
+    """
     payload = {
-        "feedback_id": feedback_id,
-        "text": text,
-        "category": category,
-        "priority": priority,
-        "score": score
+        "feedback_id": row['feedback_id'],
+        "text": row['original_text'],
+        "category": row['category'],
+        "priority": row['priority_level'],
+        "score": row['priority_score']
     }
+    st.json(payload)  # Preview payload before sending
     try:
-        res = requests.post(N8N_WEBHOOK_URL, json=payload)
+        res = requests.post(N8N_WEBHOOK_URL, json=payload, timeout=10)
         if res.status_code == 200:
-            st.success(f"✅ Sent feedback {feedback_id} to n8n")
+            st.success(f"✅ Sent feedback {row['feedback_id']} to n8n successfully!")
         else:
-            st.error(f"❌ Failed to send feedback {feedback_id} - Status {res.status_code}")
+            st.error(f"❌ Failed to send feedback {row['feedback_id']} - Status {res.status_code}")
     except Exception as e:
         st.error(f"⚠️ Error sending to n8n: {e}")
-
 
 # -------------------- Tabs --------------------
 tab1, tab2, tab3 = st.tabs(["📋 Priority List", "📊 Analytics", "💡 Insights"])
@@ -63,7 +59,6 @@ tab1, tab2, tab3 = st.tabs(["📋 Priority List", "📊 Analytics", "💡 Insigh
 with tab1:
     st.header("Prioritized Feedback List")
 
-    # Filter by priority
     filter_priority = st.multiselect(
         "Filter by Priority",
         ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'],
@@ -71,36 +66,23 @@ with tab1:
     )
     filtered_df = df[df['priority_level'].isin(filter_priority)]
 
-    # Display data
     st.dataframe(filtered_df[['feedback_id','original_text','category','priority_level','priority_score']])
 
     # Download filtered CSV
     csv = filtered_df.to_csv(index=False).encode("utf-8")
     st.download_button("📥 Download Prioritized Feedback", csv, "feedback_results.csv", "text/csv")
 
-    # Send all to n8n
+    # Send all filtered feedback to n8n
     if st.button("🚀 Send All Filtered Feedback to n8n"):
+        st.info("Sending all filtered feedback to n8n...")
         for _, row in filtered_df.iterrows():
-            send_to_n8n(
-    row['feedback_id'],
-    row['original_text'],
-    row['category'],
-    row['priority_level'],
-    row['priority_score']
-)
-
+            send_to_n8n(row)
 
     # Send single feedback
     selected_id = st.selectbox("Send single feedback by ID", filtered_df['feedback_id'].tolist())
     if st.button("Send Selected Feedback"):
         row = filtered_df[filtered_df['feedback_id'] == selected_id].iloc[0]
-        send_to_n8n(
-    row['feedback_id'],
-    row['original_text'],
-    row['category'],
-    row['priority_level'],
-    row['priority_score']
-)
+        send_to_n8n(row)
 
 # -------------------- TAB 2: Analytics --------------------
 with tab2:
@@ -153,4 +135,3 @@ with tab3:
 # -------------------- Footer --------------------
 st.markdown("---")
 st.markdown("*Powered by FeedbackIQ - AI Feedback Intelligence + n8n*")
-
