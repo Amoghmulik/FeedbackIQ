@@ -1,6 +1,8 @@
+```python
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import requests
 from groq import Groq
 
 # -------------------- Page Config --------------------
@@ -8,7 +10,7 @@ st.set_page_config(page_title="FeedbackIQ", layout="wide")
 
 # -------------------- Title --------------------
 st.title("🧠 FeedbackIQ - Feedback Intelligence")
-st.markdown("### AI-Powered Feedback Analysis Dashboard")
+st.markdown("### AI-Powered Feedback Analysis Dashboard with n8n Integration")
 
 # -------------------- Load Data --------------------
 @st.cache_data
@@ -28,6 +30,22 @@ st.sidebar.metric("Total Feedback", len(df))
 st.sidebar.metric("Critical Issues", len(df[df['priority_level'] == 'CRITICAL']))
 st.sidebar.metric("High Priority", len(df[df['priority_level'] == 'HIGH']))
 
+# -------------------- n8n Webhook --------------------
+# Replace this with your deployed n8n webhook URL
+N8N_WEBHOOK_URL = "https://YOUR-N8N-INSTANCE-HERE/webhook/feedback"
+
+def send_to_n8n(feedback_row):
+    """Send one feedback row to n8n webhook."""
+    try:
+        payload = feedback_row.to_dict()
+        response = requests.post(N8N_WEBHOOK_URL, json=payload)
+        if response.status_code == 200:
+            st.success(f"✅ Sent feedback {feedback_row['feedback_id']} to n8n")
+        else:
+            st.error(f"❌ Failed to send feedback {feedback_row['feedback_id']}")
+    except Exception as e:
+        st.error(f"⚠️ Error sending feedback: {e}")
+
 # -------------------- Tabs --------------------
 tab1, tab2, tab3 = st.tabs(["📋 Priority List", "📊 Analytics", "💡 Insights"])
 
@@ -43,24 +61,23 @@ with tab1:
     )
     filtered_df = df[df['priority_level'].isin(filter_priority)]
 
-    # Color-coded priorities
-    def highlight_priority(priority):
-        if priority == "CRITICAL":
-            return "background-color: #ff9999"
-        elif priority == "HIGH":
-            return "background-color: #ffcc99"
-        elif priority == "MEDIUM":
-            return "background-color: #fff2cc"
-        else:
-            return "background-color: #ccffcc"
-
-    st.dataframe(filtered_df[['feedback_id','original_text','category','priority_level','priority_score']].style.applymap(
-        highlight_priority, subset=["priority_level"]
-    ))
+    # Display data
+    st.dataframe(filtered_df[['feedback_id','original_text','category','priority_level','priority_score']])
 
     # Download filtered CSV
     csv = filtered_df.to_csv(index=False).encode("utf-8")
     st.download_button("📥 Download Prioritized Feedback", csv, "feedback_results.csv", "text/csv")
+
+    # Send all to n8n
+    if st.button("🚀 Send All Filtered Feedback to n8n"):
+        for _, row in filtered_df.iterrows():
+            send_to_n8n(row)
+
+    # Send single feedback
+    selected_id = st.selectbox("Send single feedback by ID", filtered_df['feedback_id'].tolist())
+    if st.button("Send Selected Feedback"):
+        row = filtered_df[filtered_df['feedback_id'] == selected_id].iloc[0]
+        send_to_n8n(row)
 
 # -------------------- TAB 2: Analytics --------------------
 with tab2:
@@ -100,7 +117,7 @@ with tab3:
     # AI Summary
     st.markdown("### 🤖 AI Insights")
     try:
-        client = Groq(api_key="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")
+        client = Groq(api_key="YOUR_GROQ_API_KEY")
         top_feedback_text = "\n".join(filtered_df.head(10)['original_text'].tolist())
         response = client.chat.completions.create(
             model="mixtral-8x7b-32768",
@@ -112,4 +129,5 @@ with tab3:
 
 # -------------------- Footer --------------------
 st.markdown("---")
-st.markdown("*Powered by FeedbackIQ - AI Feedback Intelligence*")
+st.markdown("*Powered by FeedbackIQ - AI Feedback Intelligence + n8n*")
+```
