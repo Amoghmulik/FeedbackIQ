@@ -29,7 +29,7 @@ st.sidebar.metric("Critical Issues", len(df[df['priority_level'] == 'CRITICAL'])
 st.sidebar.metric("High Priority", len(df[df['priority_level'] == 'HIGH']))
 
 # -------------------- n8n Webhook Integration --------------------
-N8N_WEBHOOK_URL = "https://amogh-2005.app.n8n.cloud/webhook/82c86925-314f-4280-8009-10837af310b2"
+N8N_WEBHOOK_URL = "https://amogh-2005.app.n8n.cloud/webhook-test/82c86925-314f-4280-8009-10837af310b2"
 
 def send_to_n8n(row):
     """
