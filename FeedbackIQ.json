@@ -1,0 +1,261 @@
+{
+  "name": "FeedbackIQ",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "82c86925-314f-4280-8009-10837af310b2",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0e147573-b10c-4778-aa70-8da516b817c1",
+      "name": "Webhook",
+      "webhookId": "82c86925-314f-4280-8009-10837af310b2",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e758d64e-746b-445d-b916-5deac6f368c5",
+              "name": "debug",
+              "value": "={{ $json }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "20f1a354-81ec-4ded-8352-c495800c6e46",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c68eb6b8-02bd-4bb9-b77b-537ddc6a8d29",
+              "leftValue": "={{ $('Webhook').item.json.body.score }}",
+              "rightValue": 5,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "f4c1b98f-b3f7-46a5-bf13-5839d3aa2903",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "narendramulik065@gmail.com",
+        "subject": "={{ $('Webhook').item.json.body.priority }}",
+        "emailType": "text",
+        "message": "={{ $('Webhook').item.json.body.feedback_id }}{{ $('Webhook').item.json.body.text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        624,
+        -96
+      ],
+      "id": "049baf2a-2778-4668-8dab-45bd749be3ef",
+      "name": "Send a message",
+      "webhookId": "4fe082c6-476d-4efd-8010-17da2734f351",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CjWcN7XFC1jyueId",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1pmOPaLogAwYgDJ85G8mHFfLPH8FKWz7jTlLEJ1gC37k",
+          "mode": "list",
+          "cachedResultName": "FeedbackIQ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pmOPaLogAwYgDJ85G8mHFfLPH8FKWz7jTlLEJ1gC37k/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pmOPaLogAwYgDJ85G8mHFfLPH8FKWz7jTlLEJ1gC37k/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "feedback_id": "={{ $('Webhook').item.json.body.feedback_id }}",
+            "text": "={{ $('Webhook').item.json.body.text }}",
+            "category": "={{ $('Webhook').item.json.body.category }}",
+            "priority": "={{ $('Webhook').item.json.body.priority }}",
+            "score": "={{ $('Webhook').item.json.body.score }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "feedback_id",
+              "displayName": "feedback_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "score",
+              "displayName": "score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        656,
+        48
+      ],
+      "id": "c68f3dec-e5c8-466e-a213-3df49dcae782",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "m78KX0mx8rpcZZ1e",
+          "name": "Google Sheets account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1
+  },
+  "versionId": "8093faa2-662b-4f9f-8921-f73281faac58",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "77580c544d91bf8bedaa71663c41f3152f30b1478d5639f068b7d4c120c8a6bf"
+  },
+  "id": "xrxHplbSTrHBF6U4",
+  "tags": [
+    {
+      "createdAt": "2025-10-04T15:12:46.566Z",
+      "updatedAt": "2025-10-04T15:12:46.566Z",
+      "id": "Fxu32LV6UtkFv5nI",
+      "name": "Feedback_report"
+    }
+  ]
+}
