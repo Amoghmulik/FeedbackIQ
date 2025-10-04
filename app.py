@@ -32,19 +32,29 @@ st.sidebar.metric("High Priority", len(df[df['priority_level'] == 'HIGH']))
 
 # -------------------- n8n Webhook --------------------
 # Your live n8n webhook URL
-N8N_WEBHOOK_URL = "https://amogh-2005.app.n8n.cloud/webhook-test/cbcd3f94-8cc1-415a-bc0a-71f29582e10f"
+# -------------------- N8N Integration --------------------
+import requests
 
-def send_to_n8n(feedback_row):
-    """Send one feedback row to n8n webhook."""
+# Use the PRODUCTION webhook URL (not the -test one)
+N8N_WEBHOOK_URL = "https://amogh-2005.app.n8n.cloud/webhook/cbcd3f94-8cc1-415a-bc0a-71f29582e10f"
+
+def send_to_n8n(feedback_id, text, category, priority, score):
+    payload = {
+        "feedback_id": feedback_id,
+        "text": text,
+        "category": category,
+        "priority": priority,
+        "score": score
+    }
     try:
-        payload = feedback_row.to_dict()
-        response = requests.post(N8N_WEBHOOK_URL, json=payload)
-        if response.status_code == 200:
-            st.success(f"✅ Sent feedback {feedback_row['feedback_id']} to n8n")
+        res = requests.post(N8N_WEBHOOK_URL, json=payload)
+        if res.status_code == 200:
+            st.success(f"✅ Sent feedback {feedback_id} to n8n")
         else:
-            st.error(f"❌ Failed to send feedback {feedback_row['feedback_id']} - Status {response.status_code}")
+            st.error(f"❌ Failed to send feedback {feedback_id} - Status {res.status_code}")
     except Exception as e:
-        st.error(f"⚠️ Error sending feedback: {e}")
+        st.error(f"⚠️ Error sending to n8n: {e}")
+
 
 # -------------------- Tabs --------------------
 tab1, tab2, tab3 = st.tabs(["📋 Priority List", "📊 Analytics", "💡 Insights"])
