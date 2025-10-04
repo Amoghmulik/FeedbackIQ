@@ -130,4 +130,4 @@ with tab3:
 # -------------------- Footer --------------------
 st.markdown("---")
 st.markdown("*Powered by FeedbackIQ - AI Feedback Intelligence + n8n*")
-```
+
