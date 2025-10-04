@@ -81,8 +81,7 @@ with tab1:
     # Send all to n8n
     if st.button("🚀 Send All Filtered Feedback to n8n"):
         for _, row in filtered_df.iterrows():
-            # Instead of send_to_n8n(row)
-send_to_n8n(
+            send_to_n8n(
     row['feedback_id'],
     row['original_text'],
     row['category'],
