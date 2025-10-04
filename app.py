@@ -33,7 +33,7 @@ N8N_WEBHOOK_URL = "https://amogh-2005.app.n8n.cloud/webhook/82c86925-314f-4280-8
 
 def send_to_n8n(row):
     """
-    Sends a single feedback row to n8n webhook.
+    Sends a single feedback row to n8n production webhook.
     """
     payload = {
         "feedback_id": row['feedback_id'],
@@ -122,7 +122,7 @@ with tab3:
     # AI Summary
     st.markdown("### 🤖 AI Insights")
     try:
-        client = Groq(api_key="YOUR_GROQ_API_KEY")
+        client = Groq(api_key="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")
         top_feedback_text = "\n".join(filtered_df.head(10)['original_text'].tolist())
         response = client.chat.completions.create(
             model="mixtral-8x7b-32768",
