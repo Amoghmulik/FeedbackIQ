@@ -3,8 +3,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import requests
 from groq import Groq
+import time
 
-# -------------------- Page Config --------------------
+# -------------------- Page Config -------------------
 st.set_page_config(page_title="FeedbackIQ", layout="wide")
 
 # -------------------- Title --------------------
@@ -31,9 +32,9 @@ st.sidebar.metric("High Priority", len(df[df['priority_level'] == 'HIGH']))
 # -------------------- n8n Webhook Integration --------------------
 N8N_WEBHOOK_URL = "https://amogh-2005.app.n8n.cloud/webhook-test/82c86925-314f-4280-8009-10837af310b2"
 
-def send_to_n8n(row):
+def send_to_n8n(row, status_placeholder=None):
     """
-    Sends a single feedback row to n8n production webhook.
+    Sends a single feedback row to n8n webhook.
     """
     payload = {
         "feedback_id": row['feedback_id'],
@@ -46,11 +47,20 @@ def send_to_n8n(row):
     try:
         res = requests.post(N8N_WEBHOOK_URL, json=payload, timeout=10)
         if res.status_code == 200:
-            st.success(f"✅ Sent feedback {row['feedback_id']} to n8n successfully!")
+            if status_placeholder:
+                status_placeholder.text(f"✅ Sent feedback {row['feedback_id']} successfully!")
+            else:
+                st.success(f"✅ Sent feedback {row['feedback_id']} successfully!")
         else:
-            st.error(f"❌ Failed to send feedback {row['feedback_id']} - Status {res.status_code}")
+            if status_placeholder:
+                status_placeholder.text(f"❌ Failed to send feedback {row['feedback_id']} - Status {res.status_code}")
+            else:
+                st.error(f"❌ Failed to send feedback {row['feedback_id']} - Status {res.status_code}")
     except Exception as e:
-        st.error(f"⚠️ Error sending to n8n: {e}")
+        if status_placeholder:
+            status_placeholder.text(f"⚠️ Error sending feedback {row['feedback_id']}: {e}")
+        else:
+            st.error(f"⚠️ Error sending feedback {row['feedback_id']}: {e}")
 
 # -------------------- Tabs --------------------
 tab1, tab2, tab3 = st.tabs(["📋 Priority List", "📊 Analytics", "💡 Insights"])
@@ -75,8 +85,10 @@ with tab1:
     # Send all filtered feedback to n8n
     if st.button("🚀 Send All Filtered Feedback to n8n"):
         st.info("Sending all filtered feedback to n8n...")
+        status_placeholder = st.empty()  # placeholder to dynamically update messages
         for _, row in filtered_df.iterrows():
-            send_to_n8n(row)
+            send_to_n8n(row, status_placeholder)
+            time.sleep(0.3)  # small delay to avoid server rate-limit
 
     # Send single feedback
     selected_id = st.selectbox("Send single feedback by ID", filtered_df['feedback_id'].tolist())
