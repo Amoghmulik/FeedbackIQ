@@ -36,7 +36,7 @@ st.sidebar.metric("High Priority", len(df[df['priority_level'] == 'HIGH']))
 import requests
 
 # Use the PRODUCTION webhook URL (not the -test one)
-N8N_WEBHOOK_URL = ""
+N8N_WEBHOOK_URL = "https://amogh-2005.app.n8n.cloud/webhook/82c86925-314f-4280-8009-10837af310b2"
 
 def send_to_n8n(feedback_id, text, category, priority, score):
     payload = {
