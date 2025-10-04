@@ -94,7 +94,13 @@ with tab1:
     selected_id = st.selectbox("Send single feedback by ID", filtered_df['feedback_id'].tolist())
     if st.button("Send Selected Feedback"):
         row = filtered_df[filtered_df['feedback_id'] == selected_id].iloc[0]
-        send_to_n8n(row)
+        send_to_n8n(
+    row['feedback_id'],
+    row['original_text'],
+    row['category'],
+    row['priority_level'],
+    row['priority_score']
+)
 
 # -------------------- TAB 2: Analytics --------------------
 with tab2:
