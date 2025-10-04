@@ -5,7 +5,7 @@ import requests
 from groq import Groq
 import time
 
-# -------------------- Page Config ----------------
+# -------------------- Page Config ---------------
 st.set_page_config(page_title="FeedbackIQ", layout="wide")
 
 # -------------------- Title --------------------
