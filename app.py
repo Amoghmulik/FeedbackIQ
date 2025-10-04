@@ -81,7 +81,15 @@ with tab1:
     # Send all to n8n
     if st.button("🚀 Send All Filtered Feedback to n8n"):
         for _, row in filtered_df.iterrows():
-            send_to_n8n(row)
+            # Instead of send_to_n8n(row)
+send_to_n8n(
+    row['feedback_id'],
+    row['original_text'],
+    row['category'],
+    row['priority_level'],
+    row['priority_score']
+)
+
 
     # Send single feedback
     selected_id = st.selectbox("Send single feedback by ID", filtered_df['feedback_id'].tolist())
