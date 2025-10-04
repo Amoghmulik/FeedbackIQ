@@ -31,8 +31,8 @@ st.sidebar.metric("Critical Issues", len(df[df['priority_level'] == 'CRITICAL'])
 st.sidebar.metric("High Priority", len(df[df['priority_level'] == 'HIGH']))
 
 # -------------------- n8n Webhook --------------------
-# Replace this with your deployed n8n webhook URL
-N8N_WEBHOOK_URL = "https://YOUR-N8N-INSTANCE-HERE/webhook/feedback"
+# Your live n8n webhook URL
+N8N_WEBHOOK_URL = "https://amogh-2005.app.n8n.cloud/webhook-test/cbcd3f94-8cc1-415a-bc0a-71f29582e10f"
 
 def send_to_n8n(feedback_row):
     """Send one feedback row to n8n webhook."""
@@ -42,7 +42,7 @@ def send_to_n8n(feedback_row):
         if response.status_code == 200:
             st.success(f"✅ Sent feedback {feedback_row['feedback_id']} to n8n")
         else:
-            st.error(f"❌ Failed to send feedback {feedback_row['feedback_id']}")
+            st.error(f"❌ Failed to send feedback {feedback_row['feedback_id']} - Status {response.status_code}")
     except Exception as e:
         st.error(f"⚠️ Error sending feedback: {e}")
 
